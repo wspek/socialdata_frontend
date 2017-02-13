@@ -3,10 +3,19 @@
 <head>
     <link rel="stylesheet" href="{{ STATIC_URL }}style.css"/>
     <meta charset="UTF-8">
-    <title>Title</title>
-    TADAAAAAAAAAAAAAA
+    <title>Public crawler</title>
 </head>
-<body>
-
+<body class="centered-wrapper">
+    <div class="centered-content">
+        <form action="/friends/contact/" method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="fieldWrapper">
+                {{ field.label_tag }} {{ field }}
+            </div>
+            {% endfor %}
+            <input type="submit" value="Submit"/>
+        </form>
+    </div>
 </body>
 </html>
