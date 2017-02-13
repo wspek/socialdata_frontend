@@ -1,0 +1,38 @@
+/*  Aligning in the center:
+
+    http://stackoverflow.com/questions/6464592/how-to-align-entire-html-body-to-the-center */
+
+body {
+    width: 100%;
+    height: 100%;
+	background-color : #777777;
+	margin: 0;
+	padding: 0;
+}
+h1 {
+	color : #000000;
+	text-align : center;
+}
+form {
+	width: 300px;
+	margin: 0 auto;
+}
+div {
+    align: center;
+}
+.centered-wrapper {
+    position: relative;
+    text-align: center;
+}
+.centered-wrapper:before {
+    content: "";
+    position: relative;
+    display: inline-block;
+    width: 0; height: 100%;
+    vertical-align: middle;
+}
+.centered-content {
+    display: inline-block;
+    vertical-align: middle;
+    /* outline: 1px solid black; */
+}
