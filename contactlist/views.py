@@ -11,7 +11,7 @@ from django.shortcuts import render
 
 from .forms import AccountForm, ProfileForm
 
-socialcrawler = crawler.Crawler()   # TODO: This has to change
+socialcrawler = crawler.Crawler()  # TODO: This has to change
 
 
 def account(request):
@@ -22,11 +22,12 @@ def account(request):
 
         # check whether it's valid:
         if form.is_valid():
-            username = form.cleaned_data['username']
+            user_name = form.cleaned_data['user_name']
             password = form.cleaned_data['password']
-            medium = form.cleaned_data['medium']
+            # social_network = form.cleaned_data['social_network']
+            social_network = u"FACEBOOK"
 
-            login(username, password, medium)
+            login(user_name, password, social_network)
 
             return HttpResponseRedirect('/contacts/profile/')
     # if a GET (or any other method) we'll create a blank form
