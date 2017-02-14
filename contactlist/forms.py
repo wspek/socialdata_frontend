@@ -1,8 +1,16 @@
 from django import forms
 
+MEDIA_CHOICES = (
+    ('FACEBOOK', 'Facebook'),
+    ('LINKEDIN', 'LinkedIn'),
+)
+
 
 class AccountForm(forms.Form):
-    subject = forms.CharField(max_length=100)
-    message = forms.CharField(widget=forms.Textarea)
-    sender = forms.EmailField()
-    cc_myself = forms.BooleanField(required=False)
+    username = forms.CharField(max_length=100)
+    password = forms.CharField(widget=forms.PasswordInput)
+    medium = forms.ChoiceField(MEDIA_CHOICES)
+
+
+class ProfileForm(forms.Form):
+    profile_id = forms.CharField(max_length=100)
