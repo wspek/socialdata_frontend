@@ -2,7 +2,7 @@
 
     http://stackoverflow.com/questions/6464592/how-to-align-entire-html-body-to-the-center */
 
-html, body {
+html, body, div.centered-wrapper {
     width: 100%;
     height: 100%;
 	background-color : #dfe3ee;
@@ -35,4 +35,8 @@ div {
     display: inline-block;
     vertical-align: middle;
     /* outline: 1px solid black; */
+}
+.left-content {
+    display: inline-block;
+    vertical-align: top;
 }

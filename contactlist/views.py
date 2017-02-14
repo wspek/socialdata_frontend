@@ -1,7 +1,4 @@
 import os
-import sys
-
-sys.path.append('/media/waldo/DATA-SHARE/Code/SocialCrawler/src')
 import pdb;
 
 import crawler
