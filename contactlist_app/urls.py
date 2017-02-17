@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from . import views
 
-app_name = 'contactlist'
+app_name = 'contactlist_app'
 urlpatterns = [
     # ex: /contacts/
     url(r'^$', views.account, name='account'),

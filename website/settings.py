@@ -32,7 +32,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 # Application definition
 
 INSTALLED_APPS = [
-    'contactlist.apps.ContactlistConfig',
+    'contactlist_app.apps.ContactlistConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

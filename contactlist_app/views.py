@@ -31,7 +31,7 @@ def account(request):
     else:
         form = AccountForm()
 
-    return render(request, 'contactlist/account.html', {'form': form})
+    return render(request, 'contactlist_app/account.html', {'form': form})
 
 
 def get_contacts(request):
@@ -53,11 +53,11 @@ def get_contacts(request):
     else:
         form = ProfileForm()
 
-    return render(request, 'contactlist/profile.html', {'form': form})
+    return render(request, 'contactlist_app/profile.html', {'form': form})
 
 
 def download(request):
-    return render(request, 'contactlist/download.html')
+    return render(request, 'contactlist_app/download.html')
 
 
 def login(username, password, medium):
