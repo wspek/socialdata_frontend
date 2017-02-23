@@ -177,6 +177,10 @@ LOGGING = {
             'level': 'DEBUG',
             'handlers': ['console', 'development_logfile'],
         },
+        'crawler': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'development_logfile'],
+        },
         # 'django': {
         #     'handlers': ['console', 'development_logfile'],
         # },
