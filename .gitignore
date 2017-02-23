@@ -17,7 +17,10 @@
 *.sqlite3
 
 # Other files and folders to ignore
+*.log
 *.csv
+runserver
 output/
 test/
 env/
+stunnel/
