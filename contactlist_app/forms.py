@@ -17,6 +17,7 @@ class AccountForm(forms.Form):
     social_network.disabled = True  # TODO: Add more social networks and dekete
 
     helper = FormHelper()
+    helper.form_id = 'id-AccountForm'
     helper.form_method = 'POST'
     helper.layout = Layout(
         Field('user_name', css_class='input-sm'),

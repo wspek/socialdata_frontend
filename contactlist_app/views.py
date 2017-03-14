@@ -68,7 +68,6 @@ def get_contacts(request):
     # if a GET (or any other method) we'll create a blank form
     else:
         logger.debug("Contacts page entered.")
-
         form = ProfileForm()
 
     return render(request, 'contactlist_app/profile.html', {'form': form})
