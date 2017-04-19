@@ -1,6 +1,5 @@
 import os
 import logging
-import pdb
 import crawler
 from django.http import HttpResponseRedirect, HttpResponse
 from wsgiref.util import FileWrapper
@@ -94,6 +93,8 @@ def process(profile_id):
     try:
         logger.debug("Attempting to retrieve contacts from backend...")
         logger.debug("Profile ID: '{0}'.".format(profile_id))
+        # contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV,
+        #                                                 "./contacts_{0}.csv".format(profile_id))
         contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV)
         logger.debug("Contacts retrieved from backend.")
     except:
