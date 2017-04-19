@@ -25,7 +25,7 @@ def account(request):
             user_name = form.cleaned_data['user_name']
             password = form.cleaned_data['password']
             # social_network = form.cleaned_data['social_network']
-            social_network = u"FACEBOOK"    # TODO
+            social_network = u"FACEBOOK"  # TODO
 
             logger.debug("Entered data - user_name: {0}, password: {1}, social_network: {2}"
                          .format(user_name, password, social_network))
@@ -109,15 +109,25 @@ def get_mutual_contacts(request):
             profile_id1 = form.cleaned_data['profile_id1']
             profile_id2 = form.cleaned_data['profile_id2']
 
-            # wrapper = FileWrapper(file(path))
-            # response = HttpResponse(wrapper, content_type='text/csv')
-            # response['Content-Disposition'] = 'attachment; filename=contacts.csv'
-            # response['Content-Length'] = os.path.getsize(path)
+            logger.debug(
+                "Attempting to retrieve mutual contacts between '{0}' and '{1}'.".format(profile_id1, profile_id2))
+
+            contacts_file = socialcrawler.get_mutual_contacts_file(profile_id1, profile_id2, crawler.FileFormat.CSV)
+
+            if contacts_file is not None:
+                logger.debug("Contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
+                path = os.path.abspath(contacts_file)
+            else:
+                path = ""
+
+            wrapper = FileWrapper(file(path))
+            response = HttpResponse(wrapper, content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=mutual_contacts.csv'
+            response['Content-Length'] = os.path.getsize(path)
 
             logger.debug("Returning response, in the form of a file wrapper.")
 
-            return None
-            # return response
+            return response
     # if a GET (or any other method) we'll create a blank form
     else:
         form = MutualContactsForm()
