@@ -14,7 +14,7 @@ class AccountForm(forms.Form):
     user_name = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput)
     social_network = forms.ChoiceField(MEDIA_CHOICES, required=False)
-    social_network.disabled = True  # TODO: Add more social networks and dekete
+    social_network.disabled = True  # TODO: Add more social networks and delete
 
     helper = FormHelper()
     helper.form_id = 'id-AccountForm'
@@ -27,6 +27,16 @@ class AccountForm(forms.Form):
     )
 
 
+class ActionForm(forms.Form):
+    helper = FormHelper()
+    helper.form_id = 'id-ActionForm'
+    helper.form_method = 'POST'
+    helper.layout = Layout(
+        FormActions(Submit('profile', 'Get a contact list for an account', css_class='btn-default'),
+                    Submit('mutuals', 'Get mutual contacts between two accounts', css_class='btn-default'))
+    )
+
+
 class ProfileForm(forms.Form):
     profile_id = forms.CharField(max_length=100)
 
@@ -35,4 +45,18 @@ class ProfileForm(forms.Form):
     helper.layout = Layout(
         Field('profile_id', css_class='input-sm'),
         FormActions(Submit('get_contacts', 'Get contacts', css_class='btn-default'))
+    )
+
+
+class MutualContactsForm(forms.Form):
+    profile_id1 = forms.CharField(max_length=100)
+    profile_id2 = forms.CharField(max_length=100)
+
+    helper = FormHelper()
+    helper.form_id = 'id-MutualContactsForm'
+    helper.form_method = 'POST'
+    helper.layout = Layout(
+        Field('profile_id1', css_class='input-sm'),
+        Field('profile_id2', css_class='input-sm'),
+        FormActions(Submit('get_mutual_contacts', 'Get mutual contacts', css_class='btn-default'))
     )
