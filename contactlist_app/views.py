@@ -1,5 +1,7 @@
 import os
 import logging
+import pdb
+
 import crawler
 from django.http import HttpResponseRedirect, HttpResponse
 from wsgiref.util import FileWrapper
@@ -153,6 +155,8 @@ def login(username, password, medium):
 
 
 def process(profile_id):
+    contacts_file = None
+
     try:
         logger.debug("Attempting to retrieve contacts from backend...")
         logger.debug("Profile ID: '{0}'.".format(profile_id))
@@ -160,13 +164,14 @@ def process(profile_id):
         #                                                 "./contacts_{0}.csv".format(profile_id))
         contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV)
         logger.debug("Contacts retrieved from backend.")
-    except:
+    except Exception as e:
         logger.debug("An error occurred while retrieving contacts from backend.")
 
     socialcrawler.close_session()
 
-    if contacts_file is not None:
+    if contacts_file is not None:   #TODO contact file accessed before initialization
         logger.debug("Contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
         return os.path.abspath(contacts_file)
     else:
+        logger.debug("Contacts file was empty.")
         return ""
