@@ -9,6 +9,11 @@ MEDIA_CHOICES = (
     ('LINKEDIN', 'LinkedIn'),
 )
 
+OUTPUTTYPE_CHOICES = (
+    ('EXCEL', 'MS Excel 2007-2013 - *.xlsx'),
+    ('CSV', 'CSV - *.csv'),
+)
+
 
 class AccountForm(forms.Form):
     user_name = forms.CharField(max_length=100)
@@ -39,11 +44,14 @@ class ActionForm(forms.Form):
 
 class ProfileForm(forms.Form):
     profile_id = forms.CharField(max_length=100)
+    output_file_type = forms.ChoiceField(OUTPUTTYPE_CHOICES, required=False)
+    # file_type.disabled = True  # TODO: Add more social networks and delete
 
     helper = FormHelper()
     helper.form_method = 'POST'
     helper.layout = Layout(
         Field('profile_id', css_class='input-sm'),
+        Field('output_file_type', css_class='btn-secondary'),
         FormActions(Submit('get_contacts', 'Get contacts', css_class='btn-default'))
     )
 
@@ -51,6 +59,7 @@ class ProfileForm(forms.Form):
 class MutualContactsForm(forms.Form):
     profile_id1 = forms.CharField(max_length=100)
     profile_id2 = forms.CharField(max_length=100)
+    output_file_type = forms.ChoiceField(OUTPUTTYPE_CHOICES, required=False)
 
     helper = FormHelper()
     helper.form_id = 'id-MutualContactsForm'
@@ -58,5 +67,6 @@ class MutualContactsForm(forms.Form):
     helper.layout = Layout(
         Field('profile_id1', css_class='input-sm'),
         Field('profile_id2', css_class='input-sm'),
+        Field('output_file_type', css_class='btn-secondary'),
         FormActions(Submit('get_mutual_contacts', 'Get mutual contacts', css_class='btn-default'))
     )

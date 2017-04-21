@@ -19,6 +19,7 @@
 # Other files and folders to ignore
 *.log
 *.csv
+*.xls*
 runserver
 output/
 test/
