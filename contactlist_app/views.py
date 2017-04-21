@@ -79,10 +79,21 @@ def get_contacts(request):
             logger.debug("Checking validity of form.")
 
             profile_id = form.cleaned_data['profile_id']
-            path = process(profile_id)
+            output_file_type = form.cleaned_data['output_file_type']
+
+            if output_file_type == "EXCEL":
+                file_format = crawler.FileFormat.EXCEL
+                file_path = './mutual_contacts.xlsx'
+                content_type = ''
+            elif output_file_type == "CSV":
+                file_format = crawler.FileFormat.CSV
+                file_path = './mutual_contacts.csv'
+                content_type = 'text/csv'
+
+            path = process(profile_id, file_format, file_path)
             wrapper = FileWrapper(file(path))
-            response = HttpResponse(wrapper, content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=contacts.csv'
+            response = HttpResponse(wrapper, content_type=content_type)
+            response['Content-Disposition'] = 'attachment; filename={0}'.format(file_path[2:])
             response['Content-Length'] = os.path.getsize(path)
 
             logger.debug("Returning response, in the form of a file wrapper.")
@@ -110,11 +121,21 @@ def get_mutual_contacts(request):
 
             profile_id1 = form.cleaned_data['profile_id1']
             profile_id2 = form.cleaned_data['profile_id2']
+            output_file_type = form.cleaned_data['output_file_type']
 
             logger.debug(
                 "Attempting to retrieve mutual contacts between '{0}' and '{1}'.".format(profile_id1, profile_id2))
 
-            contacts_file = socialcrawler.get_mutual_contacts_file(profile_id1, profile_id2, crawler.FileFormat.CSV)
+            if output_file_type == "EXCEL":
+                file_format = crawler.FileFormat.EXCEL
+                file_path = './mutual_contacts.xlsx'
+                content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            elif output_file_type == "CSV":
+                file_format = crawler.FileFormat.CSV
+                file_path = './mutual_contacts.csv'
+                content_type = 'text/csv'
+
+            contacts_file = socialcrawler.get_mutual_contacts_file(profile_id1, profile_id2, file_format, file_path)
 
             if contacts_file is not None:
                 logger.debug("Contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
@@ -123,8 +144,8 @@ def get_mutual_contacts(request):
                 path = ""
 
             wrapper = FileWrapper(file(path))
-            response = HttpResponse(wrapper, content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=mutual_contacts.csv'
+            response = HttpResponse(wrapper, content_type=content_type)
+            response['Content-Disposition'] = 'attachment; filename={0}'.format(file_path[2:])
             response['Content-Length'] = os.path.getsize(path)
 
             logger.debug("Returning response, in the form of a file wrapper.")
@@ -154,7 +175,8 @@ def login(username, password, medium):
     # logger.debug("Exception occurred while logging in.")
 
 
-def process(profile_id):
+# TODO: Does the function really need to be separate? In that case rename it.
+def process(profile_id, file_format, file_path):
     contacts_file = None
 
     try:
@@ -162,14 +184,15 @@ def process(profile_id):
         logger.debug("Profile ID: '{0}'.".format(profile_id))
         # contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV,
         #                                                 "./contacts_{0}.csv".format(profile_id))
-        contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV)
+        contacts_file = socialcrawler.get_contacts_file(profile_id, file_format, file_path)
+        # contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV, './contacts.csv')
         logger.debug("Contacts retrieved from backend.")
     except Exception as e:
         logger.debug("An error occurred while retrieving contacts from backend.")
 
     socialcrawler.close_session()
 
-    if contacts_file is not None:   #TODO contact file accessed before initialization
+    if contacts_file is not None:  # TODO contact file accessed before initialization
         logger.debug("Contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
         return os.path.abspath(contacts_file)
     else:
