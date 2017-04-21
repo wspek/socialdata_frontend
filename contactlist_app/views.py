@@ -165,7 +165,7 @@ def process(profile_id):
         contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV)
         logger.debug("Contacts retrieved from backend.")
     except Exception as e:
-        logger.debug("An error occurred while retrieving contacts from backend.")
+        logger.debug("An error occurred while retrieving contacts from backend: {0}.".format(e))
 
     socialcrawler.close_session()
 
