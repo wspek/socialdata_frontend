@@ -83,11 +83,11 @@ def get_contacts(request):
 
             if output_file_type == "EXCEL":
                 file_format = crawler.FileFormat.EXCEL
-                file_path = './mutual_contacts.xlsx'
+                file_path = './contacts.xlsx'
                 content_type = ''
             elif output_file_type == "CSV":
                 file_format = crawler.FileFormat.CSV
-                file_path = './mutual_contacts.csv'
+                file_path = './contacts.csv'
                 content_type = 'text/csv'
 
             path = process(profile_id, file_format, file_path)
