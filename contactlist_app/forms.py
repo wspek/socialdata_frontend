@@ -45,7 +45,7 @@ class ActionForm(forms.Form):
 class ProfileForm(forms.Form):
     profile_id = forms.CharField(max_length=100)
     output_file_type = forms.ChoiceField(OUTPUTTYPE_CHOICES, required=False)
-    # file_type.disabled = True  # TODO: Add more social networks and delete
+    # file_type.disabled = True
 
     helper = FormHelper()
     helper.form_method = 'POST'

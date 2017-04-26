@@ -1,6 +1,9 @@
+from __future__ import absolute_import, unicode_literals
 import os
 import logging
 import pdb
+from celery import shared_task
+from celery.contrib import rdb
 
 import crawler
 from django.http import HttpResponseRedirect, HttpResponse
@@ -12,6 +15,11 @@ from .forms import AccountForm, ActionForm, ProfileForm, MutualContactsForm
 logger = logging.getLogger(__name__)
 
 socialcrawler = crawler.Crawler()  # TODO: This has to change
+
+
+@shared_task
+def foo():
+    return "bar"
 
 
 def account(request):
@@ -29,10 +37,14 @@ def account(request):
             # social_network = form.cleaned_data['social_network']
             social_network = u"FACEBOOK"  # TODO
 
+            request.session['user_name'] = user_name
+            request.session['password'] = password
+            request.session['social_network'] = social_network
+
             logger.debug("Entered data - user_name: {0}, password: {1}, social_network: {2}"
                          .format(user_name, password, social_network))
 
-            login(user_name, password, social_network)
+            # login(user_name, password, social_network)
 
             logger.debug("Login process finished. Might be logged in or not.")
 
@@ -69,6 +81,8 @@ def action(request):
 def get_contacts(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
+        foo.delay()
+
         logger.debug("Attempting to get contacts.")
 
         # create a form instance and populate it with data from the request:
@@ -82,15 +96,23 @@ def get_contacts(request):
             output_file_type = form.cleaned_data['output_file_type']
 
             if output_file_type == "EXCEL":
-                file_format = crawler.FileFormat.EXCEL
-                file_path = './mutual_contacts.xlsx'
+                file_path = './contacts.xlsx'
                 content_type = ''
             elif output_file_type == "CSV":
-                file_format = crawler.FileFormat.CSV
-                file_path = './mutual_contacts.csv'
+                file_path = './contacts.csv'
                 content_type = 'text/csv'
 
-            path = process(profile_id, file_format, file_path)
+            rdb.set_trace()
+
+            user_name = request.session['user_name']
+            password = request.session['password']
+            social_network = request.session['social_network']
+
+            logger.debug("IN GETCONTACTS: {0}. {1}. {2}.".format(user_name, password, social_network))
+
+            result = dispatch_get_contacts_file.delay(user_name, password, social_network)
+            path = result.get()
+
             wrapper = FileWrapper(file(path))
             response = HttpResponse(wrapper, content_type=content_type)
             response['Content-Disposition'] = 'attachment; filename={0}'.format(file_path[2:])
@@ -105,6 +127,40 @@ def get_contacts(request):
         form = ProfileForm()
 
     return render(request, 'contactlist_app/profile.html', {'form': form})
+
+
+@shared_task
+# def dispatch_get_contacts_file(profile_id, file_format, file_path):
+def dispatch_get_contacts_file(username, password, social_network):
+    mycrawler = crawler.Crawler()
+    mycrawler.open_session(social_network, username, password)
+
+    profile_id = "waldo.spek"
+    file_path = './contacts.xlsx'
+    file_format = 'EXCEL'
+
+    contacts_file = None
+    try:
+        logger.debug("Attempting to retrieve contacts from backend...")
+        logger.debug("Profile ID: '{0}'.".format(profile_id))
+
+        if file_format == "EXCEL":
+            contacts_file = mycrawler.get_contacts_file(profile_id, "EXCEL", file_path)
+        elif file_format == "CSV":
+            contacts_file = mycrawler.get_contacts_file(profile_id, "EXCEL", file_path)
+
+        logger.debug("Contacts retrieved from backend.")
+    except Exception as e:
+        logger.debug("An error occurred while retrieving contacts from backend: {0}.".format(e))
+
+        mycrawler.close_session()
+
+    if contacts_file is not None:  # TODO contact file accessed before initialization
+        logger.debug("Contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
+        return os.path.abspath(contacts_file)
+    else:
+        logger.debug("Contacts file was empty.")
+        return ""
 
 
 def get_mutual_contacts(request):
@@ -174,27 +230,5 @@ def login(username, password, medium):
     socialcrawler.open_session(network, username, password)
     # logger.debug("Exception occurred while logging in.")
 
-
 # TODO: Does the function really need to be separate? In that case rename it.
-def process(profile_id, file_format, file_path):
-    contacts_file = None
-
-    try:
-        logger.debug("Attempting to retrieve contacts from backend...")
-        logger.debug("Profile ID: '{0}'.".format(profile_id))
-        # contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV,
-        #                                                 "./contacts_{0}.csv".format(profile_id))
-        contacts_file = socialcrawler.get_contacts_file(profile_id, file_format, file_path)
-        # contacts_file = socialcrawler.get_contacts_file(profile_id, crawler.FileFormat.CSV, './contacts.csv')
-        logger.debug("Contacts retrieved from backend.")
-    except Exception as e:
-        logger.debug("An error occurred while retrieving contacts from backend: {0}.".format(e))
-
-    socialcrawler.close_session()
-
-    if contacts_file is not None:  # TODO contact file accessed before initialization
-        logger.debug("Contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
-        return os.path.abspath(contacts_file)
-    else:
-        logger.debug("Contacts file was empty.")
-        return ""
+# def process(
