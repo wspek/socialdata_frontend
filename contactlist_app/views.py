@@ -37,9 +37,11 @@ def account(request):
             # social_network = form.cleaned_data['social_network']
             social_network = u"FACEBOOK"  # TODO
 
-            request.session['user_name'] = username
+            request.session['username'] = username
             request.session['password'] = password
             request.session['social_network'] = social_network
+
+            # pdb.set_trace()
 
             logger.debug("Entered data - user_name: {0}, password: {1}, social_network: {2}"
                          .format(username, password, social_network))
@@ -102,15 +104,16 @@ def get_contacts(request):
                 file_path = './contacts.csv'
                 content_type = 'text/csv'
 
-            rdb.set_trace()
+            # rdb.set_trace()
+            pdb.set_trace()
 
-            user_name = request.session['user_name']
+            username = request.session['username']
             password = request.session['password']
             social_network = request.session['social_network']
 
-            logger.debug("IN GETCONTACTS: {0}. {1}. {2}.".format(user_name, password, social_network))
+            logger.debug("IN GETCONTACTS: {0}. {1}. {2}.".format(username, password, social_network))
 
-            result = dispatch_get_contacts_file.delay(user_name, password, social_network)
+            result = dispatch_get_contacts_file.delay(username, password, social_network)
             path = result.get()
 
             wrapper = FileWrapper(file(path))

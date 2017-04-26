@@ -1,0 +1,15 @@
+https://github.com/celery/celery/tree/master/examples/django
+http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
+
+# Create the Celery database tables by performing a database migrations:
+$ python manage.py migrate django_celery_results
+
+# Start a celery worker
+$ celery -A proj worker -l info
+
+# Running a task
+$ python ./manage.py shell
+>>> from demoapp.tasks import add, mul, xsum
+>>> res = add.delay(2,3)
+>>> res.get()
+5
