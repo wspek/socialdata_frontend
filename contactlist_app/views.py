@@ -2,24 +2,59 @@ from __future__ import absolute_import, unicode_literals
 import os
 import logging
 import pdb
-from celery import shared_task
+from celery import task
 from celery.contrib import rdb
-
+from celery.result import AsyncResult
+from celery.app.task import Task
 import crawler
-from django.http import HttpResponseRedirect, HttpResponse
-from wsgiref.util import FileWrapper
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 from django.shortcuts import render
 from .forms import AccountForm, ActionForm, ProfileForm, MutualContactsForm
+from wsgiref.util import FileWrapper
 
 # Logging
 logger = logging.getLogger(__name__)
 
 socialcrawler = crawler.Crawler()  # TODO: This has to change
 
+task_id_global = ''
 
-@shared_task
-def foo():
-    return "bar"
+
+# @shared_task
+@csrf_exempt
+def poll_state(request):
+    if request.is_ajax():
+        logger.debug("--- POLL STATE ---")
+        logger.debug("Session: {0}.".format(request.session.session_key))
+
+        try:
+            task_id = request.session['current_task_id']
+        except:
+            task_id = ""
+            logger.debug("The task_id was not found in session '{0}'.".format(request.session.session_key))
+
+        # Retrieve task belonging to the ID
+        task = AsyncResult(task_id)
+
+        logger.debug("Polling state for task: {0}".format(task_id))
+        logger.debug("Task state: {0}".format(task.state))
+        logger.debug("Task info: {0}".format(json.dumps(task.info)))
+
+        progress = 0
+        if task.state == "PROGRESS":
+            progress = task.info["progress"]
+        elif task.state == "SUCCESS":
+            request.session['current_task_id'] = ""
+            request.session.save()
+            progress = 100
+        else:
+            progress = -1
+
+        return JsonResponse({'state': task.state, 'progress': progress})
+    else:
+        return JsonResponse({'state': "ERROR", 'progress': -1})
 
 
 def account(request):
@@ -40,8 +75,6 @@ def account(request):
             request.session['username'] = username
             request.session['password'] = password
             request.session['social_network'] = social_network
-
-            # pdb.set_trace()
 
             logger.debug("Entered data - user_name: {0}, password: {1}, social_network: {2}"
                          .format(username, password, social_network))
@@ -92,6 +125,9 @@ def get_contacts(request):
         if form.is_valid():
             logger.debug("Checking validity of form.")
 
+            username = request.session['username']
+            password = request.session['password']
+            social_network = request.session['social_network']
             profile_id = form.cleaned_data['profile_id']
             output_file_type = form.cleaned_data['output_file_type']
 
@@ -104,17 +140,24 @@ def get_contacts(request):
                 file_path = './contacts.csv'
                 content_type = 'text/csv'
 
-            # rdb.set_trace()
-            pdb.set_trace()
+            logger.debug(
+                "IN GETCONTACTS: {0}. {1}. {2}.".format(username, password, social_network))
 
-            username = request.session['username']
-            password = request.session['password']
-            social_network = request.session['social_network']
+            result = dispatch_get_contacts_file.delay(username, password, social_network,
+                                                      profile_id, output_file_type, file_path)
 
-            logger.debug("IN GETCONTACTS: {0}. {1}. {2}.".format(username, password, social_network))
+            request.session.modified = True
+            request.session['current_task_id'] = result.task_id
+            request.session.save()
 
-            result = dispatch_get_contacts_file.delay(username, password, social_network)
+            logger.debug("Returned from 'dispatch_get_contacts_file'.")
+            logger.debug("Session: {0}.".format(request.session.session_key))
+
+            logger.debug("Current task ID: {0}".format(request.session['current_task_id']))
+
             path = result.get()
+
+            logger.debug("Path is '{0}'.".format(path))
 
             wrapper = FileWrapper(file(path))
             response = HttpResponse(wrapper, content_type=content_type)
@@ -132,25 +175,22 @@ def get_contacts(request):
     return render(request, 'contactlist_app/profile.html', {'form': form})
 
 
-@shared_task
-# def dispatch_get_contacts_file(profile_id, file_format, file_path):
-def dispatch_get_contacts_file(username, password, social_network):
+@task(bind=True)
+def dispatch_get_contacts_file(self, username, password, social_network, profile_id, file_format, file_path):
     mycrawler = crawler.Crawler()
     mycrawler.open_session(social_network, username, password)
 
-    profile_id = "waldo.spek"
-    file_path = './contacts.xlsx'
-    file_format = 'EXCEL'
+    task_id = dispatch_get_contacts_file.request.id
+    logger.debug("Dispatched task with id = '{0}'.".format(task_id))
+
+    self.update_state(task_id, state='PROGRESS', meta={'progress': 70.0})
 
     contacts_file = None
     try:
         logger.debug("Attempting to retrieve contacts from backend...")
         logger.debug("Profile ID: '{0}'.".format(profile_id))
 
-        if file_format == "EXCEL":
-            contacts_file = mycrawler.get_contacts_file(profile_id, "EXCEL", file_path)
-        elif file_format == "CSV":
-            contacts_file = mycrawler.get_contacts_file(profile_id, "EXCEL", file_path)
+        contacts_file = mycrawler.get_contacts_file(profile_id, file_format, file_path)
 
         logger.debug("Contacts retrieved from backend.")
     except Exception as e:

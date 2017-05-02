@@ -9,12 +9,38 @@
     <!--<script type="text/javascript" src="{{ STATIC_URL }}test.js" async>-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
     <script type="text/javascript">
-        $(document).ready(function() {
-            $("#extra-content").hide();
-            $("#submit-id-get_contacts").click(function(){
-                $("#extra-content").show();
-                $("#submit-id-get_contacts").hide();
-            });
+        // DELETE ME?
+        function delay_poll_state(){
+            setTimeout(poll_state, 1000)
+        }
+
+        function poll_state(){
+            jQuery.ajax({
+                url: "poll_state/",
+                type: "GET",
+                success: function(result){
+                    set_progress(result);
+                    if (result["state"] == "SUCCESS") {
+                        // Redirect? Do something.
+                    }
+                    else {
+                        setTimeout(poll_state, 1000);
+                    }
+                },
+                error: function(){
+                    alert("Alert error!");
+                },
+            })
+        }
+
+        function set_progress(status){
+            var progress = status["progress"];
+            $('.progress-bar').css('width', progress+'%').attr('aria-valuenow', progress);
+        }
+
+        $(document).ready(function(){
+            // poll state of the current task
+            $("#submit-id-get_contacts").click(poll_state);
         });
     </script>
     <title>Get contacts</title>
@@ -23,15 +49,17 @@
 <a href="/contacts/" class="btn btn-primary" role="button">Home</a>
 <div class="centered-wrapper">
     <div class="centered-content">
-        <!--<div class="progress">-->
-        <!--<div class="progress-bar progress-bar-striped active" role="progressbar"-->
-        <!--aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:40%">-->
-        <!--<span class="sr-only">40%</span>-->
-        <!--</div>-->
+        <div class="progress" id="status-progress-bar">
+            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0"
+                 aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                <span class="sr-only">0%</span>
+            </div>
+        </div>
+        <!--<div class="button">-->
+            <!--<button type="button" class="btn btn-primary" id="extra-content">Primary</button>-->
         <!--</div>-->
         {% load crispy_forms_tags %}
         {% crispy form %}
-        <div id="extra-content">HALLO</div>
     </div>
 </div>
 </body>
