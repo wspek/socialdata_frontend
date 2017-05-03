@@ -175,22 +175,37 @@ def get_contacts(request):
     return render(request, 'contactlist_app/profile.html', {'form': form})
 
 
+def update_progress(task, task_id, progress):
+    task.update_state(task_id, state='PROGRESS', meta={'progress': progress})
+
+
 @task(bind=True)
 def dispatch_get_contacts_file(self, username, password, social_network, profile_id, file_format, file_path):
-    mycrawler = crawler.Crawler()
-    mycrawler.open_session(social_network, username, password)
-
     task_id = dispatch_get_contacts_file.request.id
+
     logger.debug("Dispatched task with id = '{0}'.".format(task_id))
 
-    self.update_state(task_id, state='PROGRESS', meta={'progress': 70.0})
+    self.update_state(task_id, state='PROGRESS', meta={'progress': 5})
+
+    logger.debug("Creating crawler.")
+
+    mycrawler = crawler.Crawler()
+
+    logger.debug("Opening new session.")
+
+    mycrawler.open_session(social_network, username, password)
+
+    self.update_state(task_id, state='PROGRESS', meta={'progress': 20})
+
+    logger.debug("Session opened.")
 
     contacts_file = None
     try:
         logger.debug("Attempting to retrieve contacts from backend...")
         logger.debug("Profile ID: '{0}'.".format(profile_id))
 
-        contacts_file = mycrawler.get_contacts_file(profile_id, file_format, file_path)
+        contacts_file = mycrawler.get_contacts_file(profile_id, file_format, file_path,
+                                                    lambda p: update_progress(self, task_id, p))
 
         logger.debug("Contacts retrieved from backend.")
     except Exception as e:
