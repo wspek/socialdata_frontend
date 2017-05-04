@@ -175,9 +175,16 @@ def get_contacts(request):
     return render(request, 'contactlist_app/profile.html', {'form': form})
 
 
-def update_progress(task, task_id, progress):
-    task.update_state(task_id, state='PROGRESS', meta={'progress': progress})
+def update_progress(task, task_id, progress, min=0, max=100):
+    # Progress of x% on a scale of 0-100% maps to a progress of mapped_progress% on a scale of min-max%
+    try:
+        progress_range = max - min
+        mapping_multiplier = progress_range / 100.0
+        mapped_progress = int(min + (progress * mapping_multiplier))
 
+        task.update_state(task_id, state='PROGRESS', meta={'progress': mapped_progress})
+    except:
+        rdb.set_trace()
 
 @task(bind=True)
 def dispatch_get_contacts_file(self, username, password, social_network, profile_id, file_format, file_path):
@@ -185,7 +192,7 @@ def dispatch_get_contacts_file(self, username, password, social_network, profile
 
     logger.debug("Dispatched task with id = '{0}'.".format(task_id))
 
-    self.update_state(task_id, state='PROGRESS', meta={'progress': 5})
+    update_progress(self, task_id, 10)
 
     logger.debug("Creating crawler.")
 
@@ -195,7 +202,7 @@ def dispatch_get_contacts_file(self, username, password, social_network, profile
 
     mycrawler.open_session(social_network, username, password)
 
-    self.update_state(task_id, state='PROGRESS', meta={'progress': 20})
+    update_progress(self, task_id, 20)
 
     logger.debug("Session opened.")
 
@@ -205,7 +212,7 @@ def dispatch_get_contacts_file(self, username, password, social_network, profile
         logger.debug("Profile ID: '{0}'.".format(profile_id))
 
         contacts_file = mycrawler.get_contacts_file(profile_id, file_format, file_path,
-                                                    lambda p: update_progress(self, task_id, p))
+                                                    lambda p: update_progress(self, task_id, p, min=20, max=100))
 
         logger.debug("Contacts retrieved from backend.")
     except Exception as e:
