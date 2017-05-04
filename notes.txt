@@ -1,0 +1,34 @@
+https://github.com/celery/celery/tree/master/examples/django
+http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
+
+# Create the Celery database tables by performing a database migrations:
+$ python manage.py migrate django_celery_results
+
+# Start a celery worker
+$ celery -A proj worker -l info
+
+# Running a task
+$ python ./manage.py shell
+>>> from demoapp.tasks import add, mul, xsum
+>>> res = add.delay(2,3)
+>>> res.get()
+5
+
+celery -A website worker -l info
+sudo service apache2 restart;tail -f /var/log/apache2/error.log
+
+
+
+                jQuery.ajax({url: "poll_state", type: "POST", data: "task_id=" + task_id,}).done(function(task){
+                    console.log(task);
+                    <!--if (task.process_percent) {-->
+                        <!--jQuery('.bar').css({'width': task.process_percent + '%'});-->
+                        <!--jQuery('.bar').html(task.process_percent + '%')-->
+                    <!--} else {-->
+                        <!--jQuery('.status').html(task);-->
+                };
+
+                // create the infinite loop of Ajax calls to check the state
+                // of the current task
+                <!--PollState(task_id);-->
+            });
