@@ -29,10 +29,3 @@ function set_progress(status){
     $('.progress-bar').css('width', progress+'%').attr('aria-valuenow', progress);
     $('.progress-bar').html(progress+'%');
 }
-
-$(document).ready(function(){
-    $("#status-progress-bar").hide()
-
-    // poll state of the current task
-    $("#submit-id-get_contacts").click(show_progress);
-});

@@ -13,6 +13,8 @@ urlpatterns = [
     url(r'^profile/poll_state/$', views.poll_state, name='poll'),
     # ex: /contacts/mutuals
     url(r'^mutuals/$', views.get_mutual_contacts, name='mutuals'),
+    # ex: /contacts/profile/poll_state
+    url(r'^mutuals/poll_state/$', views.poll_state, name='poll'),
     # ex: /contacts/download
     url(r'^download/$', views.download, name='download'),
 ]
