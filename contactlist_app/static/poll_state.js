@@ -11,6 +11,7 @@ function poll_state(){
             set_progress(result);
             if (result["state"] == "SUCCESS") {
                 // Redirect? Do something.
+                $("#status-progress-bar").hide()
             }
             else {
                 setTimeout(poll_state, 1000);

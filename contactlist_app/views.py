@@ -177,14 +177,11 @@ def get_contacts(request):
 
 def update_progress(task, task_id, progress, min=0, max=100):
     # Progress of x% on a scale of 0-100% maps to a progress of mapped_progress% on a scale of min-max%
-    try:
-        progress_range = max - min
-        mapping_multiplier = progress_range / 100.0
-        mapped_progress = int(min + (progress * mapping_multiplier))
+    progress_range = max - min
+    mapping_multiplier = progress_range / 100.0
+    mapped_progress = int(min + (progress * mapping_multiplier))
 
-        task.update_state(task_id, state='PROGRESS', meta={'progress': mapped_progress})
-    except:
-        rdb.set_trace()
+    task.update_state(task_id, state='PROGRESS', meta={'progress': mapped_progress})
 
 @task(bind=True)
 def dispatch_get_contacts_file(self, username, password, social_network, profile_id, file_format, file_path):
