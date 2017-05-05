@@ -8,9 +8,9 @@ import os
 
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'website.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'socialdata_site.settings')
 
-app = Celery('website')
+app = Celery('socialdata_site')
 
 # Using a string here means the worker don't have to serialize
 # the configuration object to child processes.

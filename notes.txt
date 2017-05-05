@@ -1,3 +1,5 @@
+### CELERY
+
 https://github.com/celery/celery/tree/master/examples/django
 http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
 
@@ -5,7 +7,7 @@ http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
 $ python manage.py migrate django_celery_results
 
 # Start a celery worker
-$ celery -A proj worker -l info
+$ celery -A website worker -l info
 
 # Running a task
 $ python ./manage.py shell
@@ -17,18 +19,48 @@ $ python ./manage.py shell
 celery -A website worker -l info
 sudo service apache2 restart;tail -f /var/log/apache2/error.log
 
+--------------
+
+### MYSQL setup for Django
+
+https://www.digitalocean.com/community/tutorials/how-to-use-mysql-or-mariadb-with-your-django-application-on-ubuntu-14-04
+
+sudo apt-get update
+sudo apt-get install python-pip python-dev mysql-server libmysqlclient-dev
+
+sudo mysql_install_db
+sudo mysql_secure_installation
+
+mysql -u root -p
+
+Each project should have its own isolated database for security reasons.
+CREATE DATABASE socialdata_site CHARACTER SET UTF8;
+CREATE USER socialdata_user@localhost IDENTIFIED BY 'antisocial';
+GRANT ALL PRIVILEGES ON socialdata_site.* TO socialdata_user@localhost;
+FLUSH PRIVILEGES;
+exit
+
+For Django:
+pip install mysqlclient
+
+vi ~/myproject/myproject/settings.py
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'socialdata_site',
+        'USER': 'socialdata_siteuser',
+        'PASSWORD': 'antisocial',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
+
+cd ~/myproject
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser -> You will be asked to select a username, provide an email address, and choose and confirm a password for the account.
+python manage.py runserver 0.0.0.0:8000
+http://server_domain_or_IP:8000
+http://server_domain_or_IP:8000/admin
 
 
-                jQuery.ajax({url: "poll_state", type: "POST", data: "task_id=" + task_id,}).done(function(task){
-                    console.log(task);
-                    <!--if (task.process_percent) {-->
-                        <!--jQuery('.bar').css({'width': task.process_percent + '%'});-->
-                        <!--jQuery('.bar').html(task.process_percent + '%')-->
-                    <!--} else {-->
-                        <!--jQuery('.status').html(task);-->
-                };
-
-                // create the infinite loop of Ajax calls to check the state
-                // of the current task
-                <!--PollState(task_id);-->
-            });
