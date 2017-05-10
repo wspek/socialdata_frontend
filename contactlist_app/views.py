@@ -5,7 +5,7 @@ import pdb
 from celery import task
 from celery.contrib import rdb
 from celery.result import AsyncResult
-from celery.app.task import Task
+# from celery.app.task import Task
 import crawler
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -148,6 +148,8 @@ def get_contacts(request):
             elif output_file_type == "CSV":
                 file_path = './contacts.csv'
                 content_type = 'text/csv'
+
+            logger.debug("dispatch_get_contacts_file({0}, {1}, {2}, {3}, {4}, {5})".format(username, password, social_network, profile_id, output_file_type, file_path))
 
             result = dispatch_get_contacts_file.delay(username, password, social_network,
                                                       profile_id, output_file_type, file_path)
