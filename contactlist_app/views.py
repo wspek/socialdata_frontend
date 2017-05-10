@@ -5,7 +5,7 @@ import pdb
 from celery import task
 from celery.contrib import rdb
 from celery.result import AsyncResult
-from celery.app.task import Task
+# from celery.app.task import Task
 import crawler
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt

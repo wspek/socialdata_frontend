@@ -19,6 +19,98 @@ $ python ./manage.py shell
 celery -A website worker -l info
 sudo service apache2 restart;tail -f /var/log/apache2/error.log
 
+DAEMON:
+
+sudo /etc/init.d/celeryd dryrun
+use the output in --detach mode to run celery
+
+OR
+
+celery multi restart worker1
+
+sudo easy_install supervisor
+sudo pip install supervisor
+echo_supervisord_conf
+sudo su
+echo_supervisord_conf > /etc/supervisord.conf
+>>> edit supervisord.conf
+
+Make sure pYTHONPATH is ok for root
+
+TROUBLESHOOTING:
+1) See if celery works locally:
+
+cd /media/waldo/DATA-SHARE/Code/prj_socialdata_site;\
+celery -A socialdata_site worker -l info
+
+2) celeryd
+
+sudo vi /etc/init.d/celeryd
+sudo vi /etc/default/celeryd
+
+ps aux | grep celery
+sudo /etc/init.d/celeryd restart;ps aux | grep celery;sudo /etc/init.d/celeryd status
+sudo /etc/init.d/celeryd stop;ps aux | grep celery;sudo /etc/init.d/celeryd status
+sudo /etc/init.d/celeryd status
+sudo /etc/init.d/celeryd dryrun
+sudo /usr/bin/python -m celery worker --app=socialdata_site --time-limit=300 --loglevel=DEBUG --concurrency=8 --pidfile=/var/run/celery/worker.pid --workdir=/media/waldo/DATA-SHARE/Code/prj_socialdata_site -n worker@chief-lado --executable=/usr/bin/python;ps aux | grep celery
+
+tail -f /var/log/celery/worker.log
+
+3) supervisord to task manage celery
+
+ps aux | grep supervisor
+sudo vi /etc/supervisord.conf
+supervisord
+supervisord -n (FOR DEBUG)
+supervisorctl status
+supervisorctl start all
+supervisorctl stop all
+supervisorctl shutdown
+tail -f /var/log/supervisord.log
+
+4) Run supervisord on startup
+
+https://serverfault.com/questions/96499/how-to-automatically-start-supervisord-on-linux-ubuntu
+
+Startup script:
+
+sudo vi /etc/init.d/supervisord
+sudo service supervisord stop
+sudo service supervisord start
+
+ps aux | grep supervisor;ps aux | grep celery
+
+5) systemd
+
+cd /etc/init.d/
+sudo vi /etc/init.d/supervisord
+ls -l /etc/systemd/system/multi-user.target.wants
+cd /etc/systemd/system/multi-user.target.wants
+sudo service supervisord stop
+sudo service supervisord start
+
+
+sudo update-rc.d supervisord remove
+
+sudo systemctl daemon-reload
+
+sudo update-rc.d supervisord defaults
+
+
+UITEINDELIJK:
+- celeryd
+- supervisor installaren
+- echter
+
+cd /etc/systemd/system/multi-user.target.wants
+sudo systemctl edit --full supervisor -> aanpassen en dus ook de environment PYTHONPATH meenemen
+sudo systemctl daemon-reload
+sudo service supervisord start
+sudo service supervisord status
+succes!!!
+
+
 --------------
 
 ### MYSQL setup for Django
@@ -48,7 +140,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'socialdata_site',
-        'USER': 'socialdata_siteuser',
+        'USER': 'socialdata_user',
         'PASSWORD': 'antisocial',
         'HOST': 'localhost',
         'PORT': '',
@@ -62,5 +154,3 @@ python manage.py createsuperuser -> You will be asked to select a username, prov
 python manage.py runserver 0.0.0.0:8000
 http://server_domain_or_IP:8000
 http://server_domain_or_IP:8000/admin
-
-
