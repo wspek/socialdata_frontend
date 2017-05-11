@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def account(request):
-    logger.debug("Incoming request of type: {0}.".format(request.method))
+    logger.info("Incoming request: {0} {1}".format(request.method, request.path))
 
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -33,12 +33,8 @@ def account(request):
             request.session['password'] = password
             request.session['social_network'] = social_network
 
-            logger.debug("Entered data - user_name: {0}, password: {1}, social_network: {2}"
-                         .format(username, password, social_network))
-
-            login(username, password, social_network)
-
-            logger.debug("Login process finished. Might be logged in or not.")
+            logger.info("Entered data - user_name: {0}, password: {1}, social_network: {2}"
+                        .format(username, password, social_network))
 
             return HttpResponseRedirect('/contacts/action/')
     # if a GET (or any other method) we'll create a blank form
@@ -49,7 +45,7 @@ def account(request):
 
 
 def action(request):
-    logger.debug("Incoming request of type: {0}.".format(request.method))
+    logger.info("Incoming request: {0} {1}".format(request.method, request.path))
 
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -70,7 +66,7 @@ def action(request):
 
 
 def get_contacts(request):
-    logger.debug("Incoming request of type: {0}.".format(request.method))
+    logger.info("Incoming request: {0} {1}".format(request.method, request.path))
 
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -96,7 +92,13 @@ def get_contacts(request):
                 file_path = './contacts.csv'
                 content_type = 'text/csv'
 
-            logger.debug("dispatch_get_contacts_file({0}, {1}, {2}, {3}, {4}, {5})".format(username, password, social_network, profile_id, output_file_type, file_path))
+            logger.info(
+                "Attempting to retrieve contacts for '{0}'.".format(profile_id))
+
+            logger.debug(
+                "dispatch_get_contacts_file({0}, {1}, {2}, {3}, {4}, {5})".format(username, password, social_network,
+                                                                                  profile_id, output_file_type,
+                                                                                  file_path))
 
             result = dispatch_get_contacts_file.delay(username, password, social_network,
                                                       profile_id, output_file_type, file_path)
@@ -118,7 +120,7 @@ def get_contacts(request):
             response['Content-Disposition'] = 'attachment; filename={0}'.format(file_path[2:])
             response['Content-Length'] = os.path.getsize(path)
 
-            logger.debug("Returning response, in the form of a file wrapper.")
+            logger.info("Returning response, in the form of a file wrapper.")
 
             return response
     # if a GET (or any other method) we'll create a blank form
@@ -133,7 +135,7 @@ def get_contacts(request):
 def dispatch_get_contacts_file(self, username, password, social_network, profile_id, file_format, file_path):
     task_id = dispatch_get_contacts_file.request.id
 
-    logger.debug("Dispatched task with id = '{0}'.".format(task_id))
+    logger.info("Dispatched task with id = '{0}'.".format(task_id))
 
     update_progress(self, task_id, 10)
 
@@ -160,12 +162,12 @@ def dispatch_get_contacts_file(self, username, password, social_network, profile
 
         logger.debug("Contacts retrieved from backend.")
     except Exception as e:
-        logger.debug("An error occurred while retrieving contacts from backend: {0}.".format(e))
+        logger.warning("An error occurred while retrieving contacts from backend: {0}.".format(e))
 
         mycrawler.close_session()
 
     if contacts_file is not None:  # TODO contact file accessed before initialization
-        logger.debug("Contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
+        logger.info("Contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
         return os.path.abspath(contacts_file)
     else:
         logger.debug("Contacts file was empty.")
@@ -173,7 +175,7 @@ def dispatch_get_contacts_file(self, username, password, social_network, profile
 
 
 def get_mutual_contacts(request):
-    logger.debug("Incoming request of type: {0}.".format(request.method))
+    logger.info("Incoming request: {0} {1}".format(request.method, request.path))
 
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -200,6 +202,9 @@ def get_mutual_contacts(request):
                 file_path = './mutual_contacts.csv'
                 content_type = 'text/csv'
 
+            logger.info(
+                "Attempting to retrieve mutual contacts between '{0}' and '{1}'.".format(profile_id1, profile_id2))
+
             # DISPATCH
             result = dispatch_get_mutual_contacts_file.delay(username, password, social_network,
                                                              profile_id1, profile_id2, output_file_type, file_path)
@@ -221,12 +226,12 @@ def get_mutual_contacts(request):
             response['Content-Disposition'] = 'attachment; filename={0}'.format(file_path[2:])
             response['Content-Length'] = os.path.getsize(path)
 
-            logger.debug("Returning response, in the form of a file wrapper.")
+            logger.info("Returning response, in the form of a file wrapper.")
 
             return response
     # if a GET (or any other method) we'll create a blank form
     else:
-        logger.debug("Mutual contacts page entered.")
+        logger.info("Mutual contacts page entered.")
         form = MutualContactsForm()
 
     return render(request, 'contactlist_app/mutuals.html', {'form': form})
@@ -264,15 +269,14 @@ def dispatch_get_mutual_contacts_file(self, username, password, social_network, 
 
         logger.debug("Contacts retrieved from backend.")
     except Exception as e:
-        logger.debug("An error occurred while retrieving contacts from backend: {0}.".format(e))
-
+        logger.warning("An error occurred while retrieving contacts from backend: {0}.".format(e))
         mycrawler.close_session()
 
     if contacts_file is not None:  # TODO contact file accessed before initialization
-        logger.debug("Mutual contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
+        logger.info("Mutual contacts file available: '{0}'".format(os.path.abspath(contacts_file)))
         return os.path.abspath(contacts_file)
     else:
-        logger.debug("Mutual contacts file was empty.")
+        logger.info("Mutual contacts file was empty.")
         return ""
 
 

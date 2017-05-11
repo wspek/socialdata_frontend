@@ -34,8 +34,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '@+as4jzjvs$y5q=5=tq_3u=0u5gd38*!@)+4zahucveu&=2k97'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-#DEBUG = False
+# DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -161,7 +161,37 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
+    'loggers': {
+        # This is the "catch all" logger
+        '': {
+            'handlers': ['console', 'dev_logfile', 'prod_logfile'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'dev_logfile': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/socialdata_site.log',
+            'formatter': 'verbose'
+        },
+        'prod_logfile': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/socialdata_site.log',
+            'formatter': 'simple'
+        },
+    },
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
@@ -178,50 +208,6 @@ LOGGING = {
         'verbose': {
             'format': '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_true'],
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-        'development_logfile': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_true'],
-            'class': 'logging.FileHandler',
-            'filename': './django_dev.log',
-            'formatter': 'verbose'
-        },
-        # 'production_logfile': {
-        #     'level': 'ERROR',
-        #     'filters': ['require_debug_false'],
-        #     'class': 'logging.FileHandler',
-        #     'filename': '/var/log/django_production.log',
-        #     'formatter': 'simple'
-        # },
-    },
-    'loggers': {
-        'contactlist_app': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'development_logfile'],
-        },
-        'crawler': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'development_logfile'],
-        },
-        # 'django': {
-        #     'handlers': ['console', 'development_logfile'],
-        # },
-        # 'contactlist_app': {
-        #     'handlers': ['console', 'development_logfile', 'production_logfile'],
-        # },
-        # 'django': {
-        #     'handlers': ['console', 'development_logfile', 'production_logfile'],
-        # },
-        'py.warnings': {
-            'handlers': ['console', 'development_logfile'],
         },
     }
 }
