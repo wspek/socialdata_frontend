@@ -158,3 +158,5 @@ python manage.py createsuperuser -> You will be asked to select a username, prov
 python manage.py runserver 0.0.0.0:8000
 http://server_domain_or_IP:8000
 http://server_domain_or_IP:8000/admin
+
+
