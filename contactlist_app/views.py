@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 def account(request):
     logger.info("Incoming request: {0} {1}".format(request.method, request.path))
 
+    request.session.set_test_cookie()
+
+    logger.info("Cookie set.")
+
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -32,6 +36,7 @@ def account(request):
             request.session['username'] = username
             request.session['password'] = password
             request.session['social_network'] = social_network
+            request.session.modified = True
 
             logger.info("Entered data - user_name: {0}, password: {1}, social_network: {2}"
                         .format(username, password, social_network))
@@ -46,6 +51,13 @@ def account(request):
 
 def action(request):
     logger.info("Incoming request: {0} {1}".format(request.method, request.path))
+
+    logger.info("Cookie:")
+
+    if request.session.test_cookie_worked():
+        logger.info("*** TRUE ***")
+    else:
+        logger.info("*** FALSE ***")
 
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
