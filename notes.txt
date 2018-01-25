@@ -53,7 +53,7 @@ pip install django-celery-results
 $ python manage.py migrate django_celery_results
 
 # Start a celery worker
-$ celery -A website worker -l info
+$ celery -A socialdata_site worker -l debug
 
 # Running a task
 $ python ./manage.py shell
